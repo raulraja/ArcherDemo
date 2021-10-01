@@ -30,10 +30,6 @@ import com.m2f.domain.features.posts.data.api.PostsService
 import com.m2f.domain.features.posts.data.datasource.GetNumSubscribersNetworkDatasource
 import com.m2f.domain.features.posts.data.datasource.GetPostsNetworkDataSource
 import com.m2f.domain.features.posts.data.model.PostEntity
-import com.m2f.domain.features.posts.mapper.PostDboToPostMapper
-import com.m2f.domain.features.posts.mapper.PostEntityToPostMapper
-import com.m2f.domain.features.posts.mapper.PostToPostDboMapper
-import com.m2f.domain.features.posts.mapper.SubscriptionCountEntityToSubscriptionCountMapper
 import com.m2f.domain.features.posts.model.Post
 import com.m2f.domain.features.posts.model.SubscriptionCount
 import com.m2f.domain.features.posts.usecase.DefaultGetNumberOfSubscribersUseCase
@@ -41,6 +37,10 @@ import com.m2f.domain.features.posts.usecase.DefaultGetPostsUseCase
 import com.m2f.domain.features.posts.usecase.GetNumberOfSubscribersUseCase
 import com.m2f.domain.features.posts.usecase.GetPostsUseCase
 import com.m2f.domain.features.posts.data.model.PostDBO
+import com.m2f.domain.features.posts.mapper.postDboToPostMapper
+import com.m2f.domain.features.posts.mapper.postEntityToPostMapper
+import com.m2f.domain.features.posts.mapper.postToPostDboMapper
+import com.m2f.domain.features.posts.mapper.subscriptionCountEntityToSubscriptionCountMapper
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -69,14 +69,14 @@ object PostsModule {
         val databaseDatasource = InMemoryDataSource<PostDBO>()
 
         val networkDataSourceMappaer: GetDataSource<Post> =
-            networkDatasource + PostEntityToPostMapper
+            networkDatasource + ::postEntityToPostMapper
 
-        val databaseDataSourceMapper = DataSourceMapper<PostDBO, Post>(
+        val databaseDataSourceMapper = DataSourceMapper(
             getDataSource = databaseDatasource,
             putDataSource = databaseDatasource,
             deleteDataSource = VoidDeleteDataSource(),
-            toOutMapper = PostDboToPostMapper,
-            toInMapper = PostToPostDboMapper
+            toOutMapper = ::postDboToPostMapper,
+            toInMapper = ::postToPostDboMapper
         )
 
         return CacheRepository(
@@ -98,7 +98,7 @@ object PostsModule {
         val postsService = retrofit.create(PostsService::class.java)
         val repository: GetRepository<SubscriptionCount> =
             GetNumSubscribersNetworkDatasource(postsService)
-                .toGetRepository(SubscriptionCountEntityToSubscriptionCountMapper)
+                .toGetRepository(::subscriptionCountEntityToSubscriptionCountMapper)
 
         return DefaultGetNumberOfSubscribersUseCase(repository, coroutineDispatcher)
     }

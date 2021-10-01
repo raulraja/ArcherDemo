@@ -23,7 +23,7 @@ import java.net.HttpURLConnection
 /**
  * Interface to define a strategy pattern for api calls
  */
-sealed fun interface MockApiCall {
+sealed interface MockApiCall {
     fun generateResponse(): MockResponse
 }
 

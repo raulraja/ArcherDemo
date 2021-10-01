@@ -19,7 +19,6 @@ package com.m2f.arch.data.datasource
 
 import arrow.core.Either
 import com.m2f.arch.data.error.Failure
-import com.m2f.arch.data.mapper.Mapper
 import com.m2f.arch.data.query.IdQuery
 import com.m2f.arch.data.query.IdsQuery
 import com.m2f.arch.data.query.Query
@@ -70,25 +69,25 @@ suspend fun <K> DeleteDataSource.deleteAll(ids: List<K>) = deleteAll(IdsQuery(id
 // Extensions to create
 fun <V> GetDataSource<V>.toGetRepository() = SingleGetDataSourceRepository(this)
 
-fun <K, V> GetDataSource<K>.withMapping(mapper: Mapper<K, V>): GetDataSource<V> =
+fun <K, V> GetDataSource<K>.withMapping(mapper: (K) -> V): GetDataSource<V> =
     GetDataSourceMapper(this, mapper)
 
-operator fun <K, V> GetDataSource<K>.plus(mapper: Mapper<K, V>): GetDataSource<V> =
+operator fun <K, V> GetDataSource<K>.plus(mapper: (K) -> V): GetDataSource<V> =
     withMapping(mapper)
 
-fun <K, V> GetDataSource<K>.toGetRepository(mapper: Mapper<K, V>): GetRepository<V> =
+fun <K, V> GetDataSource<K>.toGetRepository(mapper: (K) -> V): GetRepository<V> =
     toGetRepository().withMapping(mapper)
 
 fun <V> PutDataSource<V>.toPutRepository() = SinglePutDataSourceRepository(this)
 
 fun <K, V> PutDataSource<K>.toPutRepository(
-    toMapper: Mapper<K, V>,
-    fromMapper: Mapper<V, K>
+    toMapper: (K) -> V,
+    fromMapper: (V) -> K
 ): PutRepository<V> = toPutRepository().withMapping(toMapper, fromMapper)
 
 fun <K, V> PutDataSource<K>.withMapping(
-    toMapper: Mapper<K, V>,
-    fromMapper: Mapper<V, K>
+    toMapper: (K) -> V,
+    fromMapper: (V) -> K
 ): PutDataSource<V> = PutDataSourceMapper(this, toMapper, fromMapper)
 
 fun DeleteDataSource.toDeleteRepository() = SingleDeleteDataSourceRepository(this)

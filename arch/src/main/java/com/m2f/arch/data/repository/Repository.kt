@@ -19,7 +19,6 @@ package com.m2f.arch.data.repository
 
 import arrow.core.Either
 import com.m2f.arch.data.error.Failure
-import com.m2f.arch.data.mapper.Mapper
 import com.m2f.arch.data.operation.DefaultOperation
 import com.m2f.arch.data.operation.Operation
 import com.m2f.arch.data.query.IdQuery
@@ -99,21 +98,21 @@ suspend fun <K> DeleteRepository.deleteAll(ids: List<K>, operation: Operation = 
         IdsQuery(ids), operation
     )
 
-fun <K, V> GetRepository<K>.withMapping(mapper: Mapper<K, V>): GetRepository<V> =
+fun <K, V> GetRepository<K>.withMapping(mapper: (K) -> V): GetRepository<V> =
     GetRepositoryMapper(this, mapper)
 
-operator fun <K, V> GetRepository<K>.plus(mapper: Mapper<K, V>): GetRepository<V> =
+operator fun <K, V> GetRepository<K>.plus(mapper: (K) -> V): GetRepository<V> =
     withMapping(mapper)
 
-fun <K, V> GetRepository<K>.toGetRepository(mapper: Mapper<K, V>): GetRepository<V> =
+fun <K, V> GetRepository<K>.toGetRepository(mapper: (K) -> V): GetRepository<V> =
     withMapping(mapper)
 
 fun <K, V> PutRepository<K>.withMapping(
-    toMapper: Mapper<K, V>,
-    fromMapper: Mapper<V, K>
+    toMapper: (K) -> V,
+    fromMapper: (V) -> K
 ): PutRepository<V> = PutRepositoryMapper(this, toMapper, fromMapper)
 
 fun <K, V> PutRepository<K>.toPutRepository(
-    toMapper: Mapper<K, V>,
-    fromMapper: Mapper<V, K>
+    toMapper: (K) -> V,
+    fromMapper: (V) -> K
 ): PutRepository<V> = withMapping(toMapper, fromMapper)

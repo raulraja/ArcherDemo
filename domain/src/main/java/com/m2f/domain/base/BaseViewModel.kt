@@ -22,7 +22,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import arrow.core.Either
 import com.m2f.arch.data.error.Failure
-import com.m2f.arch.data.mapper.Mapper
 
 /**
  * Abstract base implementation for a ViewModel.
@@ -36,8 +35,8 @@ import com.m2f.arch.data.mapper.Mapper
  * @param mapper a mapper to translate Architecture [Failure] into a presentation [FailureType].
  * A dafault implementation is provided, take a look into [FailureMapper]
  */
-abstract class BaseViewModel<T>(mapper: Mapper<Failure, FailureType> = FailureMapper) : ViewModel(),
-    Mapper<Failure, FailureType> by mapper {
+abstract class BaseViewModel<T>(mapper: (Failure) -> FailureType = FailureMapper) : ViewModel(),
+    (Failure) -> FailureType by mapper {
 
     private val _state = MutableLiveData<ViewModelState<T>>()
 
@@ -51,7 +50,7 @@ abstract class BaseViewModel<T>(mapper: Mapper<Failure, FailureType> = FailureMa
     }
 
     internal open fun handleFailure(failure: Failure): ViewModelState.Error =
-        ViewModelState.Error(map(failure))
+        ViewModelState.Error(invoke(failure))
 
     internal abstract fun handleSuccess(data: T): ViewModelState<T>
 

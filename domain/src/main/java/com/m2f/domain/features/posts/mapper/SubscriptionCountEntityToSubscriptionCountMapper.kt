@@ -17,13 +17,8 @@
 
 package com.m2f.domain.features.posts.mapper
 
-import com.m2f.arch.data.mapper.Mapper
 import com.m2f.domain.features.posts.data.model.SubscriptionCountEntity
 import com.m2f.domain.features.posts.model.SubscriptionCount
 
-internal object SubscriptionCountEntityToSubscriptionCountMapper :
-    Mapper<SubscriptionCountEntity, SubscriptionCount> {
-    override fun map(from: SubscriptionCountEntity): SubscriptionCount = with(from) {
-        SubscriptionCount(count)
-    }
-}
+internal fun subscriptionCountEntityToSubscriptionCountMapper(from: SubscriptionCountEntity): SubscriptionCount =
+  with(from) { SubscriptionCount(count) }

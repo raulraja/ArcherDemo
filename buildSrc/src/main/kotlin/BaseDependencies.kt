@@ -82,7 +82,7 @@ object Test {
         const val androidxTest = "1.1.1"
         const val espresso = "3.3.0"
         const val okhttp_mockwebserver = "4.4.0"
-        const val mockk = "1.10.0"
+        const val mockk = "1.12.0"
         const val assertJ = "3.13.2"
         const val coroutinesTest = "1.3.3"
         const val testCore = "1.3.0"

@@ -19,8 +19,6 @@ package com.m2f.arch.data.datasource
 
 import arrow.core.Either
 import com.m2f.arch.data.error.Failure
-import com.m2f.arch.data.mapper.Mapper
-import com.m2f.arch.data.mapper.map
 import com.m2f.arch.data.query.Query
 
 /**
@@ -36,8 +34,8 @@ class DataSourceMapper<In, Out>(
     getDataSource: GetDataSource<In>,
     putDataSource: PutDataSource<In>,
     private val deleteDataSource: DeleteDataSource,
-    toOutMapper: Mapper<In, Out>,
-    toInMapper: Mapper<Out, In>
+    toOutMapper: (In) -> Out,
+    toInMapper: (Out) -> In
 ) : GetDataSource<Out>, PutDataSource<Out>, DeleteDataSource {
 
     private val getDataSourceMapper = GetDataSourceMapper(getDataSource, toOutMapper)
@@ -59,30 +57,30 @@ class DataSourceMapper<In, Out>(
 
 class GetDataSourceMapper<In, Out>(
     private val getDataSource: GetDataSource<In>,
-    private val toOutMapper: Mapper<In, Out>
+    private val toOutMapper: (In) -> Out
 ) : GetDataSource<Out> {
 
     override suspend fun get(query: Query) = getDataSource.get(query).map(toOutMapper)
 
     override suspend fun getAll(query: Query) =
-        getDataSource.getAll(query).map { toOutMapper.map(it) }
+        getDataSource.getAll(query).map { it.map(toOutMapper) }
 }
 
 class PutDataSourceMapper<In, Out>(
     private val putDataSource: PutDataSource<In>,
-    private val toOutMapper: Mapper<In, Out>,
-    private val toInMapper: Mapper<Out, In>
+    private val toOutMapper: (In) -> Out,
+    private val toInMapper: (Out) -> In
 ) : PutDataSource<Out> {
 
     override suspend fun put(query: Query, value: Out?): Either<Failure, Out> {
-        val mapped = value?.let { toInMapper.map(it) }
+        val mapped = value?.let { toInMapper(it) }
         return putDataSource.put(query, mapped)
-            .map { toOutMapper.map(it) }
+            .map { toOutMapper(it) }
     }
 
     override suspend fun putAll(query: Query, value: List<Out>?): Either<Failure, List<Out>> {
-        val mapped = value?.let { toInMapper.map(it) }
+        val mapped = value?.map(toInMapper)
         return putDataSource.putAll(query, mapped)
-            .map { toOutMapper.map(it) }
+            .map { it.map(toOutMapper) }
     }
 }

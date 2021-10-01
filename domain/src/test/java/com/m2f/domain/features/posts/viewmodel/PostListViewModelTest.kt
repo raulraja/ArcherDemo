@@ -17,7 +17,7 @@
 
 package com.m2f.domain.features.posts.viewmodel
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import android.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
 import arrow.core.Either
 import com.m2f.arch.data.repository.GetRepository

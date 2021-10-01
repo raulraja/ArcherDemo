@@ -17,23 +17,21 @@
 
 package com.m2f.domain.features.posts.mapper
 
-import com.m2f.arch.data.mapper.Mapper
 import com.m2f.domain.features.posts.data.model.PostDBO
 import com.m2f.domain.features.posts.model.Post
 
-internal object PostToPostDboMapper : Mapper<Post, PostDBO> {
-    override fun map(from: Post): PostDBO = with(from) {
-        PostDBO(
-            id = id,
-            title = title,
-            date = date,
-            excerpt = excerpt,
-            url = url,
-            authorAvatarUrl = authorAvatarUrl,
-            authorName = authorName,
-            authorUrl = authorUrl,
-            featuredImage = featuredImage,
-            numberOfSubscribers = numberOfSubscribers
-        )
-    }
-}
+internal fun postToPostDboMapper(from: Post): PostDBO =
+  with(from) {
+    PostDBO(
+      id = id,
+      title = title,
+      date = date,
+      excerpt = excerpt,
+      url = url,
+      authorAvatarUrl = authorAvatarUrl,
+      authorName = authorName,
+      authorUrl = authorUrl,
+      featuredImage = featuredImage,
+      numberOfSubscribers = numberOfSubscribers
+    )
+  }

@@ -19,7 +19,6 @@ package com.m2f.arch.data.datasource
 
 import arrow.core.Either
 import com.m2f.arch.data.error.Failure
-import com.m2f.arch.data.mapper.Mapper
 import com.m2f.arch.data.query.Query
 
 /**
@@ -39,27 +38,27 @@ class SerializationDataSourceMapper<SerializedIn, Out>(
     private val getDataSource: GetDataSource<SerializedIn>,
     private val putDataSource: PutDataSource<SerializedIn>,
     private val deleteDataSource: DeleteDataSource,
-    private val toOutMapper: Mapper<SerializedIn, Out>,
-    private val toOutListMapper: Mapper<SerializedIn, List<Out>>,
-    private val toInMapper: Mapper<Out, SerializedIn>,
-    private val toInMapperFromList: Mapper<List<Out>, SerializedIn>
+    private val toOutMapper: (SerializedIn) -> Out,
+    private val toOutListMapper: (SerializedIn) -> List<Out>,
+    private val toInMapper: (Out) -> SerializedIn,
+    private val toInMapperFromList: (List<Out>) -> SerializedIn
 ) : GetDataSource<Out>, PutDataSource<Out>, DeleteDataSource {
 
     override suspend fun get(query: Query) = getDataSource.get(query).map(toOutMapper)
 
     override suspend fun getAll(query: Query) =
-        getDataSource.get(query).map { toOutListMapper.map(it) }
+        getDataSource.get(query).map { toOutListMapper(it) }
 
     override suspend fun put(query: Query, value: Out?): Either<Failure, Out> {
-        val mapped = value?.let { toInMapper.map(value) }
+        val mapped = value?.let { toInMapper(value) }
         return putDataSource.put(query, mapped)
-            .map { toOutMapper.map(it) }
+            .map { toOutMapper(it) }
     }
 
     override suspend fun putAll(query: Query, value: List<Out>?): Either<Failure, List<Out>> {
-        val mapped = value?.let { toInMapperFromList.map(value) }
+        val mapped = value?.let { toInMapperFromList(value) }
         return putDataSource.put(query, mapped)
-            .map { toOutListMapper.map(it) }
+            .map { toOutListMapper(it) }
     }
 
     override suspend fun delete(query: Query) = deleteDataSource.delete(query)

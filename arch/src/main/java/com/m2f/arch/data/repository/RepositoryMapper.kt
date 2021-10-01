@@ -19,8 +19,6 @@ package com.m2f.arch.data.repository
 
 import arrow.core.Either
 import com.m2f.arch.data.error.Failure
-import com.m2f.arch.data.mapper.Mapper
-import com.m2f.arch.data.mapper.map
 import com.m2f.arch.data.operation.Operation
 import com.m2f.arch.data.query.Query
 
@@ -37,22 +35,22 @@ class RepositoryMapper<In, Out>(
     private val getRepository: GetRepository<In>,
     private val putRepository: PutRepository<In>,
     private val deleteRepository: DeleteRepository,
-    private val toOutMapper: Mapper<In, Out>,
-    private val toInMapper: Mapper<Out, In>
+    private val toOutMapper: (In) -> Out,
+    private val toInMapper: (Out) -> In
 ) : GetRepository<Out>, PutRepository<Out>, DeleteRepository {
 
     override suspend fun get(query: Query, operation: Operation) =
-        getRepository.get(query, operation).map { toOutMapper.map(it) }
+        getRepository.get(query, operation).map { toOutMapper(it) }
 
     override suspend fun getAll(query: Query, operation: Operation) =
-        getRepository.getAll(query, operation).map { toOutMapper.map(it) }
+        getRepository.getAll(query, operation).map { it.map(toOutMapper) }
 
     override suspend fun put(
         query: Query,
         value: Out?,
         operation: Operation
     ): Either<Failure, Out> {
-        val mapped = value?.let { toInMapper.map(it) }
+        val mapped = value?.let { toInMapper(it) }
         return putRepository.put(query, mapped, operation).map(toOutMapper)
     }
 
@@ -61,8 +59,8 @@ class RepositoryMapper<In, Out>(
         value: List<Out>?,
         operation: Operation
     ): Either<Failure, List<Out>> {
-        val mapped = value?.let { toInMapper.map(it) }
-        return putRepository.putAll(query, mapped, operation).map { toOutMapper.map(it) }
+        val mapped = value?.map(toInMapper)
+        return putRepository.putAll(query, mapped, operation).map { it.map(toOutMapper) }
     }
 
     override suspend fun delete(query: Query, operation: Operation) =
@@ -74,20 +72,20 @@ class RepositoryMapper<In, Out>(
 
 class GetRepositoryMapper<In, Out>(
     private val getRepository: GetRepository<In>,
-    toOutMapper: Mapper<In, Out>
-) : GetRepository<Out>, Mapper<In, Out> by toOutMapper {
+    toOutMapper: (In) -> Out
+) : GetRepository<Out>, (In) -> Out by toOutMapper {
 
     override suspend fun get(query: Query, operation: Operation): Either<Failure, Out> =
         getRepository.get(query, operation).map(this)
 
     override suspend fun getAll(query: Query, operation: Operation): Either<Failure, List<Out>> =
-        getRepository.getAll(query, operation).map { map(it) }
+        getRepository.getAll(query, operation).map { it.map(this) }
 }
 
 class PutRepositoryMapper<In, Out>(
     private val putRepository: PutRepository<In>,
-    private val toOutMapper: Mapper<In, Out>,
-    private val toInMapper: Mapper<Out, In>
+    private val toOutMapper: (In) -> Out,
+    private val toInMapper: (Out) -> In
 ) : PutRepository<Out> {
 
     override suspend fun put(
@@ -95,7 +93,7 @@ class PutRepositoryMapper<In, Out>(
         value: Out?,
         operation: Operation
     ): Either<Failure, Out> {
-        val mapped = value?.let { toInMapper.map(it) }
+        val mapped = value?.let { toInMapper(it) }
         return putRepository.put(query, mapped, operation).map(toOutMapper)
     }
 
@@ -104,7 +102,7 @@ class PutRepositoryMapper<In, Out>(
         value: List<Out>?,
         operation: Operation
     ): Either<Failure, List<Out>> {
-        val mapped = value?.let { toInMapper.map(it) }
-        return putRepository.putAll(query, mapped, operation).map { toOutMapper.map(it) }
+        val mapped = value?.map(toInMapper)
+        return putRepository.putAll(query, mapped, operation).map { it.map(toOutMapper) }
     }
 }

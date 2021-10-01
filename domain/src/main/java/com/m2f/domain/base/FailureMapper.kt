@@ -18,16 +18,15 @@
 package com.m2f.domain.base
 
 import com.m2f.arch.data.error.Failure
-import com.m2f.arch.data.mapper.Mapper
 
 /**
  * A Simple [Mapper] to convert architecture [Failure] into presentation [FailureType]
  *
  * @see [BaseViewModel], used as a default mapper
  */
-internal object FailureMapper : Mapper<Failure, FailureType> {
+internal object FailureMapper : (Failure) -> FailureType {
 
-    override fun map(from: Failure): FailureType = when (from) {
+    override fun invoke(from: Failure): FailureType = when (from) {
         Failure.UnsupportedOperation,
         Failure.DataEmpty,
         Failure.DataNotFound,

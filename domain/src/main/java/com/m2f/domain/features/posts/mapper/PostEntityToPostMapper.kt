@@ -17,27 +17,24 @@
 
 package com.m2f.domain.features.posts.mapper
 
-import com.m2f.arch.data.mapper.Mapper
 import com.m2f.domain.features.posts.data.model.PostEntity
 import com.m2f.domain.features.posts.model.Post
 
 /**
  * Mapper that translate [PostEntity] objects into [Post] objects.
  */
-internal object PostEntityToPostMapper : Mapper<PostEntity, Post> {
-
-    override fun map(from: PostEntity): Post = with(from) {
-        Post(
-            id = id,
-            title = title,
-            date = date,
-            excerpt = excerpt,
-            url = url,
-            authorAvatarUrl = author.avatarUrl,
-            authorName = author.name,
-            authorUrl = author.url,
-            featuredImage = featuredImage,
-            numberOfSubscribers = 0L
-        )
-    }
-}
+internal fun postEntityToPostMapper(from: PostEntity): Post =
+  with(from) {
+    Post(
+      id = id,
+      title = title,
+      date = date,
+      excerpt = excerpt,
+      url = url,
+      authorAvatarUrl = author.avatarUrl,
+      authorName = author.name,
+      authorUrl = author.url,
+      featuredImage = featuredImage,
+      numberOfSubscribers = 0L
+    )
+  }

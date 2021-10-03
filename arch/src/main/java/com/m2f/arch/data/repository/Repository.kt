@@ -34,53 +34,53 @@ interface Repository {
 }
 
 // Repositories
-interface GetRepository<V> : Repository {
-    suspend fun get(query: Query, operation: Operation = DefaultOperation): Either<Failure, V>
+interface GetRepository<Q, V> : Repository {
+    suspend fun get(query: Q, operation: Operation = DefaultOperation): Either<Failure, V>
     suspend fun getAll(
-        query: Query,
+        query: Q,
         operation: Operation = DefaultOperation
     ): Either<Failure, List<V>>
 }
 
-interface PutRepository<V> : Repository {
+interface PutRepository<Q, V> : Repository {
     suspend fun put(
-        query: Query,
+        query: Q,
         value: V? = null,
         operation: Operation = DefaultOperation
     ): Either<Failure, V>
 
     suspend fun putAll(
-        query: Query,
+        query: Q,
         value: List<V>? = emptyList(),
         operation: Operation = DefaultOperation
     ): Either<Failure, List<V>>
 }
 
-interface DeleteRepository : Repository {
-    suspend fun delete(query: Query, operation: Operation = DefaultOperation): Either<Failure, Unit>
+interface DeleteRepository<Q> : Repository {
+    suspend fun delete(query: Q, operation: Operation = DefaultOperation): Either<Failure, Unit>
     suspend fun deleteAll(
-        query: Query,
+        query: Q,
         operation: Operation = DefaultOperation
     ): Either<Failure, Unit>
 }
 
 // Extensions
 
-suspend fun <K, V> GetRepository<V>.get(id: K, operation: Operation = DefaultOperation) = get(
+suspend fun <K, V> GetRepository<IdQuery<K>, V>.get(id: K, operation: Operation = DefaultOperation) = get(
     IdQuery(id), operation
 )
 
-suspend fun <K, V> GetRepository<V>.getAll(ids: List<K>, operation: Operation = DefaultOperation) =
+suspend fun <K, V> GetRepository<IdsQuery<K>, V>.getAll(ids: List<K>, operation: Operation = DefaultOperation) =
     getAll(
         IdsQuery(ids), operation
     )
 
-suspend fun <K, V> PutRepository<V>.put(id: K, value: V?, operation: Operation = DefaultOperation) =
+suspend fun <K, V> PutRepository<IdQuery<K>, V>.put(id: K, value: V?, operation: Operation = DefaultOperation) =
     put(
         IdQuery(id), value, operation
     )
 
-suspend fun <K, V> PutRepository<V>.putAll(
+suspend fun <K, V> PutRepository<IdsQuery<K>, V>.putAll(
     ids: List<K>,
     values: List<V>? = emptyList(),
     operation: Operation = DefaultOperation
@@ -89,30 +89,30 @@ suspend fun <K, V> PutRepository<V>.putAll(
     operation
 )
 
-suspend fun <K> DeleteRepository.delete(id: K, operation: Operation = DefaultOperation) = delete(
+suspend fun <K> DeleteRepository<IdQuery<K>>.delete(id: K, operation: Operation = DefaultOperation) = delete(
     IdQuery(id), operation
 )
 
-suspend fun <K> DeleteRepository.deleteAll(ids: List<K>, operation: Operation = DefaultOperation) =
+suspend fun <K> DeleteRepository<IdsQuery<K>>.deleteAll(ids: List<K>, operation: Operation = DefaultOperation) =
     deleteAll(
         IdsQuery(ids), operation
     )
 
-fun <K, V> GetRepository<K>.withMapping(mapper: (K) -> V): GetRepository<V> =
+fun <Q, K, V> GetRepository<Q, K>.withMapping(mapper: (K) -> V): GetRepository<Q, V> =
     GetRepositoryMapper(this, mapper)
 
-operator fun <K, V> GetRepository<K>.plus(mapper: (K) -> V): GetRepository<V> =
+operator fun <Q, K, V> GetRepository<Q, K>.plus(mapper: (K) -> V): GetRepository<Q, V> =
     withMapping(mapper)
 
-fun <K, V> GetRepository<K>.toGetRepository(mapper: (K) -> V): GetRepository<V> =
+fun <Q, K, V> GetRepository<Q, K>.toGetRepository(mapper: (K) -> V): GetRepository<Q, V> =
     withMapping(mapper)
 
-fun <K, V> PutRepository<K>.withMapping(
+fun <Q, K, V> PutRepository<Q, K>.withMapping(
     toMapper: (K) -> V,
     fromMapper: (V) -> K
-): PutRepository<V> = PutRepositoryMapper(this, toMapper, fromMapper)
+): PutRepository<Q, V> = PutRepositoryMapper(this, toMapper, fromMapper)
 
-fun <K, V> PutRepository<K>.toPutRepository(
+fun <Q, K, V> PutRepository<Q, K>.toPutRepository(
     toMapper: (K) -> V,
     fromMapper: (V) -> K
-): PutRepository<V> = withMapping(toMapper, fromMapper)
+): PutRepository<Q, V> = withMapping(toMapper, fromMapper)

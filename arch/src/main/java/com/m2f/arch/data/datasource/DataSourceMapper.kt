@@ -30,55 +30,55 @@ import com.m2f.arch.data.query.Query
  * @param toOutMapper Mapper to map data source objects to repository objects
  * @param toInMapper Mapper to map repository objects to data source objects
  */
-class DataSourceMapper<In, Out>(
-    getDataSource: GetDataSource<In>,
-    putDataSource: PutDataSource<In>,
-    private val deleteDataSource: DeleteDataSource,
+class DataSourceMapper<Q, In, Out>(
+    getDataSource: GetDataSource<Q, In>,
+    putDataSource: PutDataSource<Q, In>,
+    private val deleteDataSource: DeleteDataSource<Q>,
     toOutMapper: (In) -> Out,
     toInMapper: (Out) -> In
-) : GetDataSource<Out>, PutDataSource<Out>, DeleteDataSource {
+) : GetDataSource<Q, Out>, PutDataSource<Q, Out>, DeleteDataSource<Q> {
 
     private val getDataSourceMapper = GetDataSourceMapper(getDataSource, toOutMapper)
     private val putDataSourceMapper = PutDataSourceMapper(putDataSource, toOutMapper, toInMapper)
 
-    override suspend fun get(query: Query) = getDataSourceMapper.get(query)
+    override suspend fun get(query: Q) = getDataSourceMapper.get(query)
 
-    override suspend fun getAll(query: Query) = getDataSourceMapper.getAll(query)
+    override suspend fun getAll(query: Q) = getDataSourceMapper.getAll(query)
 
-    override suspend fun put(query: Query, value: Out?) = putDataSourceMapper.put(query, value)
+    override suspend fun put(query: Q, value: Out?) = putDataSourceMapper.put(query, value)
 
-    override suspend fun putAll(query: Query, value: List<Out>?) =
+    override suspend fun putAll(query: Q, value: List<Out>?) =
         putDataSourceMapper.putAll(query, value)
 
-    override suspend fun delete(query: Query) = deleteDataSource.delete(query)
+    override suspend fun delete(query: Q) = deleteDataSource.delete(query)
 
-    override suspend fun deleteAll(query: Query) = deleteDataSource.deleteAll(query)
+    override suspend fun deleteAll(query: Q) = deleteDataSource.deleteAll(query)
 }
 
-class GetDataSourceMapper<In, Out>(
-    private val getDataSource: GetDataSource<In>,
+class GetDataSourceMapper<Q, In, Out>(
+    private val getDataSource: GetDataSource<Q, In>,
     private val toOutMapper: (In) -> Out
-) : GetDataSource<Out> {
+) : GetDataSource<Q, Out> {
 
-    override suspend fun get(query: Query) = getDataSource.get(query).map(toOutMapper)
+    override suspend fun get(query: Q) = getDataSource.get(query).map(toOutMapper)
 
-    override suspend fun getAll(query: Query) =
+    override suspend fun getAll(query: Q) =
         getDataSource.getAll(query).map { it.map(toOutMapper) }
 }
 
-class PutDataSourceMapper<In, Out>(
-    private val putDataSource: PutDataSource<In>,
+class PutDataSourceMapper<Q, In, Out>(
+    private val putDataSource: PutDataSource<Q, In>,
     private val toOutMapper: (In) -> Out,
     private val toInMapper: (Out) -> In
-) : PutDataSource<Out> {
+) : PutDataSource<Q, Out> {
 
-    override suspend fun put(query: Query, value: Out?): Either<Failure, Out> {
+    override suspend fun put(query: Q, value: Out?): Either<Failure, Out> {
         val mapped = value?.let { toInMapper(it) }
         return putDataSource.put(query, mapped)
             .map { toOutMapper(it) }
     }
 
-    override suspend fun putAll(query: Query, value: List<Out>?): Either<Failure, List<Out>> {
+    override suspend fun putAll(query: Q, value: List<Out>?): Either<Failure, List<Out>> {
         val mapped = value?.map(toInMapper)
         return putDataSource.putAll(query, mapped)
             .map { it.map(toOutMapper) }

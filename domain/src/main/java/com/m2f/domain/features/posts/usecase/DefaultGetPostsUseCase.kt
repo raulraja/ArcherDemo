@@ -37,7 +37,7 @@ import java.net.URI
  * to retrieve the subscription counts.
  */
 internal class DefaultGetPostsUseCase(
-    private val repository: GetRepository<Post>,
+    private val repository: GetRepository<PostsQuery, Post>,
     private val getsubsCountUseCase: GetNumberOfSubscribersUseCase,
     coroutineDispatcher: CoroutineDispatcher
 ) :

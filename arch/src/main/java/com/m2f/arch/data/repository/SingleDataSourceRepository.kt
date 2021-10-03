@@ -23,50 +23,50 @@ import com.m2f.arch.data.datasource.PutDataSource
 import com.m2f.arch.data.operation.Operation
 import com.m2f.arch.data.query.Query
 
-class SingleDataSourceRepository<T>(
-    private val getDataSource: GetDataSource<T>,
-    private val putDataSource: PutDataSource<T>,
-    private val deleteDataSource: DeleteDataSource
-) : GetRepository<T>, PutRepository<T>, DeleteRepository {
+class SingleDataSourceRepository<Q, T>(
+    private val getDataSource: GetDataSource<Q, T>,
+    private val putDataSource: PutDataSource<Q, T>,
+    private val deleteDataSource: DeleteDataSource<Q>
+) : GetRepository<Q, T>, PutRepository<Q, T>, DeleteRepository<Q> {
 
-    override suspend fun get(query: Query, operation: Operation) = getDataSource.get(query)
+    override suspend fun get(query: Q, operation: Operation) = getDataSource.get(query)
 
-    override suspend fun getAll(query: Query, operation: Operation) = getDataSource.getAll(query)
+    override suspend fun getAll(query: Q, operation: Operation) = getDataSource.getAll(query)
 
-    override suspend fun put(query: Query, value: T?, operation: Operation) =
+    override suspend fun put(query: Q, value: T?, operation: Operation) =
         putDataSource.put(query, value)
 
-    override suspend fun putAll(query: Query, value: List<T>?, operation: Operation) =
+    override suspend fun putAll(query: Q, value: List<T>?, operation: Operation) =
         putDataSource.putAll(query, value)
 
-    override suspend fun delete(query: Query, operation: Operation) = deleteDataSource.delete(query)
+    override suspend fun delete(query: Q, operation: Operation) = deleteDataSource.delete(query)
 
-    override suspend fun deleteAll(query: Query, operation: Operation) =
+    override suspend fun deleteAll(query: Q, operation: Operation) =
         deleteDataSource.deleteAll(query)
 }
 
-class SingleGetDataSourceRepository<T>(private val getDataSource: GetDataSource<T>) :
-    GetRepository<T> {
+class SingleGetDataSourceRepository<Q, T>(private val getDataSource: GetDataSource<Q, T>) :
+    GetRepository<Q, T> {
 
-    override suspend fun get(query: Query, operation: Operation) = getDataSource.get(query)
+    override suspend fun get(query: Q, operation: Operation) = getDataSource.get(query)
 
-    override suspend fun getAll(query: Query, operation: Operation) = getDataSource.getAll(query)
+    override suspend fun getAll(query: Q, operation: Operation) = getDataSource.getAll(query)
 }
 
-class SinglePutDataSourceRepository<T>(private val putDataSource: PutDataSource<T>) :
-    PutRepository<T> {
-    override suspend fun put(query: Query, value: T?, operation: Operation) =
+class SinglePutDataSourceRepository<Q, T>(private val putDataSource: PutDataSource<Q, T>) :
+    PutRepository<Q, T> {
+    override suspend fun put(query: Q, value: T?, operation: Operation) =
         putDataSource.put(query, value)
 
-    override suspend fun putAll(query: Query, value: List<T>?, operation: Operation) =
+    override suspend fun putAll(query: Q, value: List<T>?, operation: Operation) =
         putDataSource.putAll(query, value)
 }
 
-class SingleDeleteDataSourceRepository(private val deleteDataSource: DeleteDataSource) :
-    DeleteRepository {
+class SingleDeleteDataSourceRepository<Q>(private val deleteDataSource: DeleteDataSource<Q>) :
+    DeleteRepository<Q> {
 
-    override suspend fun delete(query: Query, operation: Operation) = deleteDataSource.delete(query)
+    override suspend fun delete(query: Q, operation: Operation) = deleteDataSource.delete(query)
 
-    override suspend fun deleteAll(query: Query, operation: Operation) =
+    override suspend fun deleteAll(query: Q, operation: Operation) =
         deleteDataSource.deleteAll(query)
 }

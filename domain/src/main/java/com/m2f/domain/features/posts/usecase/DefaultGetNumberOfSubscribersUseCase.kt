@@ -30,7 +30,7 @@ import kotlinx.coroutines.CoroutineDispatcher
  * Default implementation of [GetNumberOfSubscribersUseCase]
  */
 internal class DefaultGetNumberOfSubscribersUseCase(
-    private val getRepository: GetRepository<SubscriptionCount>,
+    private val getRepository: GetRepository<SubscribersQuery, SubscriptionCount>,
     coroutineDispatcher: CoroutineDispatcher
 ) : ParametrizedUseCase<SubscribersQuery, Long>(coroutineDispatcher),
     GetNumberOfSubscribersUseCase {

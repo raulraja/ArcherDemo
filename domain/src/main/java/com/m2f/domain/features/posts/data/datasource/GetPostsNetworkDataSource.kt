@@ -29,20 +29,20 @@ import com.m2f.domain.utils.tryNetwork
 /**
  * [GetDataSource] implementation for type [PostEntity]
  */
-internal class GetPostsNetworkDataSource(private val service: PostsService) :
-    GetDataSource<PostEntity> {
+internal class GetPostsNetworkDataSource<Q>(private val service: PostsService) :
+    GetDataSource<Q, PostEntity> {
 
     /**
      * A single get() is not implemented so we return a [Failure.QueryNotSupported] for each possible
      * call to this function
      */
-    override suspend fun get(query: Query): Either<Failure, PostEntity> =
+    override suspend fun get(query: Q): Either<Failure, PostEntity> =
         Either.Left(Failure.QueryNotSupported)
 
     /**
      * A Collection get() call to retrieve a list of [PostEntity]
      */
-    override suspend fun getAll(query: Query): Either<Failure, List<PostEntity>> = tryNetwork {
+    override suspend fun getAll(query: Q): Either<Failure, List<PostEntity>> = tryNetwork {
         when (query) {
             is PostsQuery -> {
                 Either.Right(service.getPosts(query.number).posts)

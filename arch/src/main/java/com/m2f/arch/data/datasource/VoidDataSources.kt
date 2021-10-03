@@ -21,44 +21,44 @@ import arrow.core.Either
 import com.m2f.arch.data.error.Failure
 import com.m2f.arch.data.query.Query
 
-class VoidDataSource<V> : GetDataSource<V>, PutDataSource<V>, DeleteDataSource {
-    override suspend fun get(query: Query): Either<Failure, V> =
+class VoidDataSource<Q, V> : GetDataSource<Q, V>, PutDataSource<Q, V>, DeleteDataSource<Q> {
+    override suspend fun get(query: Q): Either<Failure, V> =
         Either.Left(Failure.UnsupportedOperation)
 
-    override suspend fun getAll(query: Query): Either<Failure, List<V>> =
+    override suspend fun getAll(query: Q): Either<Failure, List<V>> =
         Either.Left(Failure.UnsupportedOperation)
 
-    override suspend fun put(query: Query, value: V?): Either<Failure, V> =
+    override suspend fun put(query: Q, value: V?): Either<Failure, V> =
         Either.Left(Failure.UnsupportedOperation)
 
-    override suspend fun putAll(query: Query, value: List<V>?): Either<Failure, List<V>> =
+    override suspend fun putAll(query: Q, value: List<V>?): Either<Failure, List<V>> =
         Either.Left(Failure.UnsupportedOperation)
 
-    override suspend fun delete(query: Query) = Either.Left(Failure.UnsupportedOperation)
+    override suspend fun delete(query: Q) = Either.Left(Failure.UnsupportedOperation)
 
-    override suspend fun deleteAll(query: Query) = Either.Left(Failure.UnsupportedOperation)
+    override suspend fun deleteAll(query: Q) = Either.Left(Failure.UnsupportedOperation)
 }
 
-class VoidGetDataSource<V> : GetDataSource<V> {
-    override suspend fun get(query: Query): Either<Failure, V> =
+class VoidGetDataSource<Q, V> : GetDataSource<Q, V> {
+    override suspend fun get(query: Q): Either<Failure, V> =
         Either.Left(Failure.UnsupportedOperation)
 
-    override suspend fun getAll(query: Query): Either<Failure, List<V>> =
-        Either.Left(Failure.UnsupportedOperation)
-}
-
-class VoidPutDataSource<V> : PutDataSource<V> {
-    override suspend fun put(query: Query, value: V?): Either<Failure, V> =
-        Either.Left(Failure.UnsupportedOperation)
-
-    override suspend fun putAll(query: Query, value: List<V>?): Either<Failure, List<V>> =
+    override suspend fun getAll(query: Q): Either<Failure, List<V>> =
         Either.Left(Failure.UnsupportedOperation)
 }
 
-class VoidDeleteDataSource : DeleteDataSource {
-    override suspend fun delete(query: Query): Either<Failure, Unit> =
+class VoidPutDataSource<Q, V> : PutDataSource<Q, V> {
+    override suspend fun put(query: Q, value: V?): Either<Failure, V> =
         Either.Left(Failure.UnsupportedOperation)
 
-    override suspend fun deleteAll(query: Query): Either<Failure, Unit> =
+    override suspend fun putAll(query: Q, value: List<V>?): Either<Failure, List<V>> =
+        Either.Left(Failure.UnsupportedOperation)
+}
+
+class VoidDeleteDataSource<Q> : DeleteDataSource<Q> {
+    override suspend fun delete(query: Q): Either<Failure, Unit> =
+        Either.Left(Failure.UnsupportedOperation)
+
+    override suspend fun deleteAll(query: Q): Either<Failure, Unit> =
         Either.Left(Failure.UnsupportedOperation)
 }

@@ -37,7 +37,7 @@ import org.junit.Test
  */
 class GetNumberOfSubscribersUseCaseTest {
 
-    private val repository: GetRepository<SubscriptionCount> = mockk()
+    private val repository: GetRepository<SubscribersQuery, SubscriptionCount> = mockk()
 
     private val dispatcher: CoroutineDispatcher = Dispatchers.Unconfined
 

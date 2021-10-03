@@ -34,48 +34,37 @@ import com.m2f.arch.data.query.Query
 class DeviceStorageDataSource<T>(
     private val sharedPreferences: SharedPreferences,
     private val prefix: String = ""
-) : GetDataSource<T>, PutDataSource<T>, DeleteDataSource {
+) : GetDataSource<KeyQuery, T>, PutDataSource<KeyQuery, T>, DeleteDataSource<Query> {
 
-    override suspend fun get(query: Query): Either<Failure, T> {
-        return when (query) {
-            is KeyQuery -> {
-                val key = addPrefixTo(query.key)
-                if (!sharedPreferences.contains(key)) {
-                    Either.Left(Failure.DataNotFound)
-                } else {
-                    Either.Right(sharedPreferences.all[key] as T)
-                }
-            }
-            else -> Either.Left(Failure.QueryNotSupported)
-        }
+    override suspend fun get(query: KeyQuery): Either<Failure, T> {
+      val key = addPrefixTo(query.key)
+      return if (!sharedPreferences.contains(key)) {
+        Either.Left(Failure.DataNotFound)
+      } else {
+        Either.Right(sharedPreferences.all[key] as T)
+      }
     }
 
-    override suspend fun getAll(query: Query): Either<Failure, List<T>> =
+    override suspend fun getAll(query: KeyQuery): Either<Failure, List<T>> =
         Either.Left(Failure.QueryNotSupported)
 
-    override suspend fun put(query: Query, value: T?): Either<Failure, T> {
-        return when (query) {
-            is KeyQuery -> {
-                value?.let {
-                    val key = addPrefixTo(query.key)
-                    val editor = sharedPreferences.edit()
-                    val result = when (value) {
-                        is String -> editor.putString(key, value).apply().let { true }
-                        is Boolean -> editor.putBoolean(key, value).apply().let { true }
-                        is Float -> editor.putFloat(key, value).apply().let { true }
-                        is Int -> editor.putInt(key, value).apply().let { true }
-                        is Long -> editor.putLong(key, value).apply().let { true }
-                        else -> false
-                    }
-                    if (result) Either.Right<T>(it) else Either.Left(Failure.UnsupportedOperation)
-                }
-                    ?: Either.Left(Failure.DataEmpty)
-            }
-            else -> Either.Left(Failure.QueryNotSupported)
-        }
+    override suspend fun put(query: KeyQuery, value: T?): Either<Failure, T> {
+        return value?.let {
+          val key = addPrefixTo(query.key)
+          val editor = sharedPreferences.edit()
+          val result = when (value) {
+            is String -> editor.putString(key, value).apply().let { true }
+            is Boolean -> editor.putBoolean(key, value).apply().let { true }
+            is Float -> editor.putFloat(key, value).apply().let { true }
+            is Int -> editor.putInt(key, value).apply().let { true }
+            is Long -> editor.putLong(key, value).apply().let { true }
+            else -> false
+          }
+          if (result) Either.Right<T>(it) else Either.Left(Failure.UnsupportedOperation)
+        } ?: Either.Left(Failure.DataEmpty)
     }
 
-    override suspend fun putAll(query: Query, value: List<T>?): Either<Failure, List<T>> =
+    override suspend fun putAll(query: KeyQuery, value: List<T>?): Either<Failure, List<T>> =
         Either.Left(Failure.QueryNotSupported)
 
     override suspend fun delete(query: Query): Either<Failure, Unit> {

@@ -36,9 +36,9 @@ class InMemoryDataSourceTest {
         val wrongKeyQuery = KeyQuery("wrong-key")
     }
 
-    private lateinit var getDataSource: GetDataSource<Int>
-    private lateinit var putDataSource: PutDataSource<Int>
-    private lateinit var deleteDataSource: DeleteDataSource
+    private lateinit var getDataSource: GetDataSource<KeyQuery, Int>
+    private lateinit var putDataSource: PutDataSource<KeyQuery, Int>
+    private lateinit var deleteDataSource: DeleteDataSource<KeyQuery>
 
     @Before
     fun setUp() {

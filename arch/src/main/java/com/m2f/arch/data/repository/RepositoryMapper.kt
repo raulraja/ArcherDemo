@@ -31,22 +31,22 @@ import com.m2f.arch.data.query.Query
  * @param toOutMapper Mapper to map data objects to domain objects
  * @param toInMapper Mapper to map domain objects to data objects
  */
-class RepositoryMapper<In, Out>(
-    private val getRepository: GetRepository<In>,
-    private val putRepository: PutRepository<In>,
-    private val deleteRepository: DeleteRepository,
+class RepositoryMapper<Q, In, Out>(
+    private val getRepository: GetRepository<Q, In>,
+    private val putRepository: PutRepository<Q, In>,
+    private val deleteRepository: DeleteRepository<Q>,
     private val toOutMapper: (In) -> Out,
     private val toInMapper: (Out) -> In
-) : GetRepository<Out>, PutRepository<Out>, DeleteRepository {
+) : GetRepository<Q, Out>, PutRepository<Q, Out>, DeleteRepository<Q> {
 
-    override suspend fun get(query: Query, operation: Operation) =
+    override suspend fun get(query: Q, operation: Operation) =
         getRepository.get(query, operation).map { toOutMapper(it) }
 
-    override suspend fun getAll(query: Query, operation: Operation) =
+    override suspend fun getAll(query: Q, operation: Operation) =
         getRepository.getAll(query, operation).map { it.map(toOutMapper) }
 
     override suspend fun put(
-        query: Query,
+        query: Q,
         value: Out?,
         operation: Operation
     ): Either<Failure, Out> {
@@ -55,7 +55,7 @@ class RepositoryMapper<In, Out>(
     }
 
     override suspend fun putAll(
-        query: Query,
+        query: Q,
         value: List<Out>?,
         operation: Operation
     ): Either<Failure, List<Out>> {
@@ -63,33 +63,33 @@ class RepositoryMapper<In, Out>(
         return putRepository.putAll(query, mapped, operation).map { it.map(toOutMapper) }
     }
 
-    override suspend fun delete(query: Query, operation: Operation) =
+    override suspend fun delete(query: Q, operation: Operation) =
         deleteRepository.delete(query, operation)
 
-    override suspend fun deleteAll(query: Query, operation: Operation) =
+    override suspend fun deleteAll(query: Q, operation: Operation) =
         deleteRepository.deleteAll(query, operation)
 }
 
-class GetRepositoryMapper<In, Out>(
-    private val getRepository: GetRepository<In>,
+class GetRepositoryMapper<Q, In, Out>(
+    private val getRepository: GetRepository<Q, In>,
     toOutMapper: (In) -> Out
-) : GetRepository<Out>, (In) -> Out by toOutMapper {
+) : GetRepository<Q, Out>, (In) -> Out by toOutMapper {
 
-    override suspend fun get(query: Query, operation: Operation): Either<Failure, Out> =
+    override suspend fun get(query: Q, operation: Operation): Either<Failure, Out> =
         getRepository.get(query, operation).map(this)
 
-    override suspend fun getAll(query: Query, operation: Operation): Either<Failure, List<Out>> =
+    override suspend fun getAll(query: Q, operation: Operation): Either<Failure, List<Out>> =
         getRepository.getAll(query, operation).map { it.map(this) }
 }
 
-class PutRepositoryMapper<In, Out>(
-    private val putRepository: PutRepository<In>,
+class PutRepositoryMapper<Q, In, Out>(
+    private val putRepository: PutRepository<Q, In>,
     private val toOutMapper: (In) -> Out,
     private val toInMapper: (Out) -> In
-) : PutRepository<Out> {
+) : PutRepository<Q, Out> {
 
     override suspend fun put(
-        query: Query,
+        query: Q,
         value: Out?,
         operation: Operation
     ): Either<Failure, Out> {
@@ -98,7 +98,7 @@ class PutRepositoryMapper<In, Out>(
     }
 
     override suspend fun putAll(
-        query: Query,
+        query: Q,
         value: List<Out>?,
         operation: Operation
     ): Either<Failure, List<Out>> {

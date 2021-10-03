@@ -46,15 +46,15 @@ class CacheRepositoryTest {
     private val insertedValue = 1
     private val insertedList = listOf(1, 2, 3, 4, 5)
 
-    private val remoteGetDataSource: GetDataSource<Int> = mockk()
-    private val remotePutDataSource: PutDataSource<Int> = mockk()
-    private val remoteDeleteDataSource: DeleteDataSource = mockk()
+    private val remoteGetDataSource: GetDataSource<KeyQuery, Int> = mockk()
+    private val remotePutDataSource: PutDataSource<KeyQuery, Int> = mockk()
+    private val remoteDeleteDataSource: DeleteDataSource<KeyQuery> = mockk()
 
-    private val localGetDataSource: GetDataSource<Int> = mockk()
-    private val localPutDataSource: PutDataSource<Int> = mockk()
-    private val localDeleteDataSource: DeleteDataSource = mockk()
+    private val localGetDataSource: GetDataSource<KeyQuery, Int> = mockk()
+    private val localPutDataSource: PutDataSource<KeyQuery, Int> = mockk()
+    private val localDeleteDataSource: DeleteDataSource<KeyQuery> = mockk()
 
-    val cacheRepository: CacheRepository<Int> = CacheRepository(
+    val cacheRepository: CacheRepository<KeyQuery, Int> = CacheRepository(
         getMain = remoteGetDataSource,
         putMain = remotePutDataSource,
         deleteMain = remoteDeleteDataSource,

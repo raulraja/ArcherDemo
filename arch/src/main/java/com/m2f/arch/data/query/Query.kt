@@ -19,27 +19,13 @@ package com.m2f.arch.data.query
 
 // Queries
 
-open class Query
+sealed interface Query
 
-object VoidQuery : Query()
-
-object AllObjectsQuery : Query()
-
-// Single object query
-open class ObjectQuery<out T>(val value: T) : Query()
-
-// Collection objects query
-open class ObjectsQuery<out T>(val values: Collection<T>) : Query()
+object AllObjectsQuery : Query
 
 open class IdQuery<out T>(val identifier: T) : KeyQuery(identifier.toString())
-
-open class IntegerIdQuery(val id: Int) : IdQuery<Int>(id)
-
-open class LongIdQuery(val id: Long) : IdQuery<Long>(id)
-
-open class StringIdQuery(val id: String) : IdQuery<String>(id)
 
 open class IdsQuery<out T>(val identifiers: Collection<T>) : KeyQuery(identifiers.toString())
 
 // Key value queries
-open class KeyQuery(val key: String /* key associated to the query */) : Query()
+open class KeyQuery(val key: String /* key associated to the query */) : Query

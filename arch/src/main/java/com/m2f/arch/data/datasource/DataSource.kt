@@ -32,62 +32,62 @@ import com.m2f.arch.data.repository.withMapping
 interface DataSource
 
 // DataSources
-interface GetDataSource<V> : DataSource {
-    suspend fun get(query: Query): Either<Failure, V>
+interface GetDataSource<Q, V> : DataSource {
+    suspend fun get(query: Q): Either<Failure, V>
 
-    suspend fun getAll(query: Query): Either<Failure, List<V>>
+    suspend fun getAll(query: Q): Either<Failure, List<V>>
 }
 
-interface PutDataSource<V> : DataSource {
-    suspend fun put(query: Query, value: V? = null): Either<Failure, V>
+interface PutDataSource<Q, V> : DataSource {
+    suspend fun put(query: Q, value: V? = null): Either<Failure, V>
 
-    suspend fun putAll(query: Query, value: List<V>? = emptyList()): Either<Failure, List<V>>
+    suspend fun putAll(query: Q, value: List<V>? = emptyList()): Either<Failure, List<V>>
 }
 
-interface DeleteDataSource : DataSource {
-    suspend fun delete(query: Query): Either<Failure, Unit>
+interface DeleteDataSource<Q> : DataSource {
+    suspend fun delete(query: Q): Either<Failure, Unit>
 
-    suspend fun deleteAll(query: Query): Either<Failure, Unit>
+    suspend fun deleteAll(query: Q): Either<Failure, Unit>
 }
 
 // Extensions
-suspend fun <K, V> GetDataSource<V>.get(id: K): Either<Failure, V> = get(IdQuery(id))
+suspend fun <K, V> GetDataSource<IdQuery<K>, V>.get(id: K): Either<Failure, V> = get(IdQuery(id))
 
-suspend fun <K, V> GetDataSource<V>.getAll(ids: List<K>): Either<Failure, List<V>> =
+suspend fun <K, V> GetDataSource<IdsQuery<K>, V>.getAll(ids: List<K>): Either<Failure, List<V>> =
     getAll(IdsQuery(ids))
 
-suspend fun <K, V> PutDataSource<V>.put(id: K, value: V?): Either<Failure, V> =
+suspend fun <K, V> PutDataSource<IdQuery<K>, V>.put(id: K, value: V?): Either<Failure, V> =
     put(IdQuery(id), value)
 
-suspend fun <K, V> PutDataSource<V>.putAll(ids: List<K>, values: List<V>?) =
+suspend fun <K, V> PutDataSource<IdsQuery<K>, V>.putAll(ids: List<K>, values: List<V>?) =
     putAll(IdsQuery(ids), values)
 
-suspend fun <K> DeleteDataSource.delete(id: K) = delete(IdQuery(id))
+suspend fun <K> DeleteDataSource<IdQuery<K>>.delete(id: K) = delete(IdQuery(id))
 
-suspend fun <K> DeleteDataSource.deleteAll(ids: List<K>) = deleteAll(IdsQuery(ids))
+suspend fun <K> DeleteDataSource<IdsQuery<K>>.deleteAll(ids: List<K>) = deleteAll(IdsQuery(ids))
 
 // Extensions to create
-fun <V> GetDataSource<V>.toGetRepository() = SingleGetDataSourceRepository(this)
+fun <Q, V> GetDataSource<Q, V>.toGetRepository() = SingleGetDataSourceRepository(this)
 
-fun <K, V> GetDataSource<K>.withMapping(mapper: (K) -> V): GetDataSource<V> =
+fun <Q, K, V> GetDataSource<Q, K>.withMapping(mapper: (K) -> V): GetDataSource<Q, V> =
     GetDataSourceMapper(this, mapper)
 
-operator fun <K, V> GetDataSource<K>.plus(mapper: (K) -> V): GetDataSource<V> =
+operator fun <Q, K, V> GetDataSource<Q, K>.plus(mapper: (K) -> V): GetDataSource<Q, V> =
     withMapping(mapper)
 
-fun <K, V> GetDataSource<K>.toGetRepository(mapper: (K) -> V): GetRepository<V> =
+fun <Q, K, V> GetDataSource<Q, K>.toGetRepository(mapper: (K) -> V): GetRepository<Q, V> =
     toGetRepository().withMapping(mapper)
 
-fun <V> PutDataSource<V>.toPutRepository() = SinglePutDataSourceRepository(this)
+fun <Q, V> PutDataSource<Q, V>.toPutRepository() = SinglePutDataSourceRepository(this)
 
-fun <K, V> PutDataSource<K>.toPutRepository(
+fun <Q, K, V> PutDataSource<Q, K>.toPutRepository(
     toMapper: (K) -> V,
     fromMapper: (V) -> K
-): PutRepository<V> = toPutRepository().withMapping(toMapper, fromMapper)
+): PutRepository<Q, V> = toPutRepository().withMapping(toMapper, fromMapper)
 
-fun <K, V> PutDataSource<K>.withMapping(
+fun <Q, K, V> PutDataSource<Q, K>.withMapping(
     toMapper: (K) -> V,
     fromMapper: (V) -> K
-): PutDataSource<V> = PutDataSourceMapper(this, toMapper, fromMapper)
+): PutDataSource<Q, V> = PutDataSourceMapper(this, toMapper, fromMapper)
 
-fun DeleteDataSource.toDeleteRepository() = SingleDeleteDataSourceRepository(this)
+fun <Q> DeleteDataSource<Q>.toDeleteRepository() = SingleDeleteDataSourceRepository(this)

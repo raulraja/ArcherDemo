@@ -81,7 +81,7 @@ class DefaultGetPostsUseCaseTest {
         numberOfSubscribers = 0L
     )
 
-    private val repository: GetRepository<Post> = mockk()
+    private val repository: GetRepository<PostsQuery, Post> = mockk()
 
     private val getSubscribersCountUseCase: GetNumberOfSubscribersUseCase = mockk()
 

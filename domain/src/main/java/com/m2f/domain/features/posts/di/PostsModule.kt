@@ -24,6 +24,7 @@ import com.m2f.arch.data.datasource.VoidPutDataSource
 import com.m2f.arch.data.datasource.memory.InMemoryDataSource
 import com.m2f.arch.data.datasource.plus
 import com.m2f.arch.data.datasource.toGetRepository
+import com.m2f.arch.data.query.KeyQuery
 import com.m2f.arch.data.repository.CacheRepository
 import com.m2f.arch.data.repository.GetRepository
 import com.m2f.domain.features.posts.data.api.PostsService
@@ -41,6 +42,8 @@ import com.m2f.domain.features.posts.mapper.postDboToPostMapper
 import com.m2f.domain.features.posts.mapper.postEntityToPostMapper
 import com.m2f.domain.features.posts.mapper.postToPostDboMapper
 import com.m2f.domain.features.posts.mapper.subscriptionCountEntityToSubscriptionCountMapper
+import com.m2f.domain.features.posts.query.PostsQuery
+import com.m2f.domain.features.posts.query.SubscribersQuery
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -62,13 +65,13 @@ object PostsModule {
     @Singleton
     fun providesPostRepository(
         retrofit: Retrofit
-    ): CacheRepository<Post> {
+    ): CacheRepository<KeyQuery, Post> {
         val postsService = retrofit.create(PostsService::class.java)
 
-        val networkDatasource: GetDataSource<PostEntity> = GetPostsNetworkDataSource(postsService)
+        val networkDatasource: GetDataSource<KeyQuery, PostEntity> = GetPostsNetworkDataSource(postsService)
         val databaseDatasource = InMemoryDataSource<PostDBO>()
 
-        val networkDataSourceMappaer: GetDataSource<Post> =
+        val networkDataSourceMappaer: GetDataSource<KeyQuery, Post> =
             networkDatasource + ::postEntityToPostMapper
 
         val databaseDataSourceMapper = DataSourceMapper(
@@ -96,7 +99,7 @@ object PostsModule {
         coroutineDispatcher: CoroutineDispatcher
     ): GetNumberOfSubscribersUseCase {
         val postsService = retrofit.create(PostsService::class.java)
-        val repository: GetRepository<SubscriptionCount> =
+        val repository: GetRepository<SubscribersQuery, SubscriptionCount> =
             GetNumSubscribersNetworkDatasource(postsService)
                 .toGetRepository(::subscriptionCountEntityToSubscriptionCountMapper)
 
@@ -106,7 +109,7 @@ object PostsModule {
     @Provides
     @Singleton
     fun providesGetPostsUseCase(
-        repository: CacheRepository<Post>,
+        repository: CacheRepository<PostsQuery, Post>,
         subsUseCase: GetNumberOfSubscribersUseCase,
         coroutineDispatcher: CoroutineDispatcher
     ): GetPostsUseCase =

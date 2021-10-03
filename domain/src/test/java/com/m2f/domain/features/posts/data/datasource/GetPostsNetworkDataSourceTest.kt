@@ -19,6 +19,7 @@ package com.m2f.domain.features.posts.data.datasource
 
 import arrow.core.Either
 import com.m2f.arch.data.error.Failure
+import com.m2f.arch.data.query.Query
 import com.m2f.domain.features.posts.data.api.PostsService
 import com.m2f.domain.features.posts.query.PostsQuery
 import com.m2f.domain.helpers.MockNetworkDispatcher
@@ -46,7 +47,7 @@ class GetPostsNetworkDataSourceTest {
 
     private lateinit var service: PostsService
 
-    private lateinit var dataSource: GetPostsNetworkDataSource
+    private lateinit var dataSource: GetPostsNetworkDataSource<Query>
 
     private val dispatcher = MockNetworkDispatcher
     private val koDispatcher = MockNetworkKoDispatcher

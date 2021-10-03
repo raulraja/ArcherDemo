@@ -66,7 +66,7 @@ class PostListViewModelTest {
 
     private val observer = mockk<Observer<ViewModelState<List<Post>>>>()
 
-    private val repository: GetRepository<Post> = mockk()
+    private val repository: GetRepository<PostsQuery, Post> = mockk()
 
     private val getSubscribersCountUseCase: GetNumberOfSubscribersUseCase = mockk()
 

@@ -32,16 +32,16 @@ import com.m2f.arch.data.operation.MainSyncOperation
 import com.m2f.arch.data.operation.Operation
 import com.m2f.arch.data.query.Query
 
-class CacheRepository<V>(
-    private val getCache: GetDataSource<V>,
-    private val putCache: PutDataSource<V>,
-    private val deleteCache: DeleteDataSource,
-    private val getMain: GetDataSource<V>,
-    private val putMain: PutDataSource<V>,
-    private val deleteMain: DeleteDataSource
-) : GetRepository<V>, PutRepository<V>, DeleteRepository {
+class CacheRepository<Q, V>(
+    private val getCache: GetDataSource<Q, V>,
+    private val putCache: PutDataSource<Q, V>,
+    private val deleteCache: DeleteDataSource<Q>,
+    private val getMain: GetDataSource<Q, V>,
+    private val putMain: PutDataSource<Q, V>,
+    private val deleteMain: DeleteDataSource<Q>
+) : GetRepository<Q, V>, PutRepository<Q, V>, DeleteRepository<Q> {
 
-    override suspend fun get(query: Query, operation: Operation): Either<Failure, V> {
+    override suspend fun get(query: Q, operation: Operation): Either<Failure, V> {
         return when (operation) {
             is DefaultOperation -> get(query, CacheSyncOperation)
             is MainOperation -> getMain.get(query)
@@ -68,7 +68,7 @@ class CacheRepository<V>(
         }
     }
 
-    override suspend fun getAll(query: Query, operation: Operation): Either<Failure, List<V>> {
+    override suspend fun getAll(query: Q, operation: Operation): Either<Failure, List<V>> {
         return when (operation) {
             is DefaultOperation -> getAll(query, CacheSyncOperation)
             is MainOperation -> getMain.getAll(query)
@@ -95,7 +95,7 @@ class CacheRepository<V>(
         }
     }
 
-    override suspend fun put(query: Query, value: V?, operation: Operation): Either<Failure, V> =
+    override suspend fun put(query: Q, value: V?, operation: Operation): Either<Failure, V> =
         when (operation) {
             is DefaultOperation -> put(query, value, MainSyncOperation)
             is MainOperation -> putMain.put(query, value)
@@ -105,7 +105,7 @@ class CacheRepository<V>(
         }
 
     override suspend fun putAll(
-        query: Query,
+        query: Q,
         value: List<V>?,
         operation: Operation
     ): Either<Failure, List<V>> = when (operation) {
@@ -116,7 +116,7 @@ class CacheRepository<V>(
         is CacheSyncOperation -> putCache.putAll(query, value).flatMap { putMain.putAll(query, it) }
     }
 
-    override suspend fun delete(query: Query, operation: Operation): Either<Failure, Unit> =
+    override suspend fun delete(query: Q, operation: Operation): Either<Failure, Unit> =
         when (operation) {
             is DefaultOperation -> delete(query, MainSyncOperation)
             is MainOperation -> deleteMain.delete(query)
@@ -125,7 +125,7 @@ class CacheRepository<V>(
             is CacheSyncOperation -> deleteCache.delete(query).flatMap { deleteMain.delete(query) }
         }
 
-    override suspend fun deleteAll(query: Query, operation: Operation): Either<Failure, Unit> =
+    override suspend fun deleteAll(query: Q, operation: Operation): Either<Failure, Unit> =
         when (operation) {
             is DefaultOperation -> deleteAll(query, MainSyncOperation)
             is MainOperation -> deleteMain.deleteAll(query)

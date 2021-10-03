@@ -34,34 +34,34 @@ import com.m2f.arch.data.query.Query
  * @param toInMapper Mapper to map repository objects to data source objects
  * @param toInMapperFromList Mapper to map repository object lists to data source objects
  */
-class SerializationDataSourceMapper<SerializedIn, Out>(
-    private val getDataSource: GetDataSource<SerializedIn>,
-    private val putDataSource: PutDataSource<SerializedIn>,
-    private val deleteDataSource: DeleteDataSource,
+class SerializationDataSourceMapper<Q, SerializedIn, Out>(
+    private val getDataSource: GetDataSource<Q, SerializedIn>,
+    private val putDataSource: PutDataSource<Q, SerializedIn>,
+    private val deleteDataSource: DeleteDataSource<Q>,
     private val toOutMapper: (SerializedIn) -> Out,
     private val toOutListMapper: (SerializedIn) -> List<Out>,
     private val toInMapper: (Out) -> SerializedIn,
     private val toInMapperFromList: (List<Out>) -> SerializedIn
-) : GetDataSource<Out>, PutDataSource<Out>, DeleteDataSource {
+) : GetDataSource<Q, Out>, PutDataSource<Q, Out>, DeleteDataSource<Q> {
 
-    override suspend fun get(query: Query) = getDataSource.get(query).map(toOutMapper)
+    override suspend fun get(query: Q) = getDataSource.get(query).map(toOutMapper)
 
-    override suspend fun getAll(query: Query) =
+    override suspend fun getAll(query: Q) =
         getDataSource.get(query).map { toOutListMapper(it) }
 
-    override suspend fun put(query: Query, value: Out?): Either<Failure, Out> {
+    override suspend fun put(query: Q, value: Out?): Either<Failure, Out> {
         val mapped = value?.let { toInMapper(value) }
         return putDataSource.put(query, mapped)
             .map { toOutMapper(it) }
     }
 
-    override suspend fun putAll(query: Query, value: List<Out>?): Either<Failure, List<Out>> {
+    override suspend fun putAll(query: Q, value: List<Out>?): Either<Failure, List<Out>> {
         val mapped = value?.let { toInMapperFromList(value) }
         return putDataSource.put(query, mapped)
             .map { toOutListMapper(it) }
     }
 
-    override suspend fun delete(query: Query) = deleteDataSource.delete(query)
+    override suspend fun delete(query: Q) = deleteDataSource.delete(query)
 
-    override suspend fun deleteAll(query: Query) = deleteDataSource.deleteAll(query)
+    override suspend fun deleteAll(query: Q) = deleteDataSource.deleteAll(query)
 }

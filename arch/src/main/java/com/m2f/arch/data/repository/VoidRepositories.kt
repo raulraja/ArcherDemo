@@ -22,55 +22,55 @@ import com.m2f.arch.data.error.Failure
 import com.m2f.arch.data.operation.Operation
 import com.m2f.arch.data.query.Query
 
-class VoidRepository<V> : GetRepository<V>, PutRepository<V>, DeleteRepository {
+class VoidRepository<Q, V> : GetRepository<Q, V>, PutRepository<Q, V>, DeleteRepository<Q> {
 
-    override suspend fun get(query: Query, operation: Operation): Either<Failure, V> = Either.Left(
+    override suspend fun get(query: Q, operation: Operation): Either<Failure, V> = Either.Left(
         Failure.UnsupportedOperation
     )
 
-    override suspend fun getAll(query: Query, operation: Operation): Either<Failure, List<V>> =
+    override suspend fun getAll(query: Q, operation: Operation): Either<Failure, List<V>> =
         Either.Left(Failure.UnsupportedOperation)
 
-    override suspend fun put(query: Query, value: V?, operation: Operation): Either<Failure, V> =
+    override suspend fun put(query: Q, value: V?, operation: Operation): Either<Failure, V> =
         Either.Left(Failure.UnsupportedOperation)
 
     override suspend fun putAll(
-        query: Query,
+        query: Q,
         value: List<V>?,
         operation: Operation
     ): Either<Failure, List<V>> = Either.Left(Failure.UnsupportedOperation)
 
-    override suspend fun delete(query: Query, operation: Operation): Either<Failure, Unit> =
+    override suspend fun delete(query: Q, operation: Operation): Either<Failure, Unit> =
         Either.Left(Failure.UnsupportedOperation)
 
-    override suspend fun deleteAll(query: Query, operation: Operation): Either<Failure, Unit> =
-        Either.Left(Failure.UnsupportedOperation)
-}
-
-class VoidGetRepository<V> : GetRepository<V> {
-
-    override suspend fun get(query: Query, operation: Operation): Either<Failure, V> =
-        Either.Left(Failure.UnsupportedOperation)
-
-    override suspend fun getAll(query: Query, operation: Operation): Either<Failure, List<V>> =
+    override suspend fun deleteAll(query: Q, operation: Operation): Either<Failure, Unit> =
         Either.Left(Failure.UnsupportedOperation)
 }
 
-class VoidPutRepository<V> : PutRepository<V> {
-    override suspend fun put(query: Query, value: V?, operation: Operation): Either<Failure, V> =
+class VoidGetRepository<Q, V> : GetRepository<Q, V> {
+
+    override suspend fun get(query: Q, operation: Operation): Either<Failure, V> =
+        Either.Left(Failure.UnsupportedOperation)
+
+    override suspend fun getAll(query: Q, operation: Operation): Either<Failure, List<V>> =
+        Either.Left(Failure.UnsupportedOperation)
+}
+
+class VoidPutRepository<Q, V> : PutRepository<Q, V> {
+    override suspend fun put(query: Q, value: V?, operation: Operation): Either<Failure, V> =
         Either.Left(Failure.UnsupportedOperation)
 
     override suspend fun putAll(
-        query: Query,
+        query: Q,
         value: List<V>?,
         operation: Operation
     ): Either<Failure, List<V>> = Either.Left(Failure.UnsupportedOperation)
 }
 
-class VoidDeleteRepository : DeleteRepository {
-    override suspend fun delete(query: Query, operation: Operation): Either<Failure, Unit> =
+class VoidDeleteRepository<Q> : DeleteRepository<Q> {
+    override suspend fun delete(query: Q, operation: Operation): Either<Failure, Unit> =
         Either.Left(Failure.UnsupportedOperation)
 
-    override suspend fun deleteAll(query: Query, operation: Operation): Either<Failure, Unit> =
+    override suspend fun deleteAll(query: Q, operation: Operation): Either<Failure, Unit> =
         Either.Left(Failure.UnsupportedOperation)
 }

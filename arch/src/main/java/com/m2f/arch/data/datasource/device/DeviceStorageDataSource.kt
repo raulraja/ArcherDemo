@@ -87,7 +87,6 @@ class DeviceStorageDataSource<T>(
                     .apply()
                 Either.Right(Unit)
             }
-            else -> Either.Left(Failure.QueryNotSupported)
         }
     }
 
